@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar dinero Alke Wallet</title>
+</head>
+<!--Bootstrap y CSS-->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<link rel="stylesheet" href="CSS/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+
+<!--Script Lottie Player-->
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<style>
+    body {
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+</style>
+</head>
+<header>
+    <div class="container-fluid">
+        <nav class="navbar navbar-light" style="background: linear-gradient(to bottom, #6f42c1 0%, transparent 100%);">
+            <div class="container-fluid">
+                <!--Animación Moneda-->
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
+                        type="module"></script>
+                    <dotlottie-player src="https://lottie.host/d30e2b8c-0a59-402d-9351-3de4736d305a/WSgwpzFO7c.json"
+                        background="transparent" speed="1" style="width: 100px; height: 100px;"
+                        class="d-inline-block align-text-top" loop autoplay></dotlottie-player>
+                    <h1 id="Alke-Wallet-Header">Alke Wallet</h1>
+                </a>
+            </div>
+        </nav>
+    </div>
+    <!--Boton de Menu Sidebar-->
+    <div class="d-flex justify-content-end">
+        <button id="Boton-Menu" class="btn btn-custom-violet btn-lg" type="button" data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+            Menu
+        </button>
+    </div>
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title" id="offcanvasExampleLabel" style="color: #6f42c1;">Menu</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <script src="https://kit.fontawesome.com/87dc0401be.js" crossorigin="anonymous"></script>
+
+
+            <div>
+                <ul>
+                    <li><a class="dropdown-item" href="menu.html"><i class="fas fa-user"></i> Usuario</a></li>
+                    <li><a class="dropdown-item" href="deposit.html"><i class="fa-solid fa-money-bill-trend-up"></i>
+                            Depositar</a></li>
+                    <li><a class="dropdown-item" href="sendmoney.html"><i class="fa-regular fa-handshake"></i> Envia
+                            Dinero</a></li>
+                    <li><a class="dropdown-item" href="transactions.html"><i class="fa-solid fa-list"></i> Historial de
+                            transferencias</a></li>
+                </ul>
+            </div>
+        </div>
+</header>
+
+<body>
+    <div class="container">
+        <form id="addContactForm">
+            <div class="form-group">
+                <h2 id="saldo"></h2>
+                <label for="contactName">Nombre del Contacto:</label>
+                <input type="text" class="form-control" id="contactName" placeholder="Nombre del Contacto">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addContact()">Agregar nuevo contacto</button>
+        </form>
+        <form id="depositForm" style="margin-top: 20px;">
+            <div class="form-group">
+                <label for="contactSelect">Selecciona un Contacto:</label>
+                <select class="form-control" id="contactSelect"></select>
+            </div>
+            <div class="form-group">
+                <label for="depositAmount">Monto del Depósito:</label>
+                <input type="number" class="form-control" id="depositAmount" placeholder="Monto del Depósito">
+            </div>
+            <button type="button" class="btn btn-success" onclick="depositMoney()">Realizar Depósito</button>
+        </form>
+        <ul id="contactList" class="list-group" style="margin-top: 20px;"></ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const nombreUsuario = localStorage.getItem('nombreUsuario');
+            if (nombreUsuario) {
+                loadUserData(nombreUsuario); 
+            }
+            loadContacts(); 
+        });
+
+        function loadUserData(nombreUsuario) {
+            const userData = JSON.parse(localStorage.getItem(nombreUsuario));
+            if (userData) {
+                document.getElementById('saldo').textContent = '$ ' + userData.balance;
+            }
+        }
+
+        function addContact() {
+            const contactName = document.getElementById('contactName').value;
+
+            let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            if (!contacts.some(contact => contact.name === contactName)) {
+                contacts.push({ name: contactName, balance: 0 });
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+
+                alert(`Nuevo contacto añadido: ${contactName}`);
+            } else {
+                alert(`El contacto ya existe: ${contactName}`); 
+            }
+
+            loadContacts(); 
+        }
+
+        function loadContacts() {
+            const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            const contactListElement = document.getElementById('contactList');
+            const contactSelectElement = document.getElementById('contactSelect');
+
+            contactListElement.innerHTML = '';
+            contactSelectElement.innerHTML = '';
+
+            contacts.forEach(contact => {
+                const li = document.createElement('li');
+                li.textContent = `${contact.name} - Cantidad depositada: ${contact.balance}`;
+                contactListElement.appendChild(li);
+
+                const option = document.createElement('option');
+                option.value = contact.name;
+                option.textContent = contact.name;
+                contactSelectElement.appendChild(option);
+            });
+        }
+
+        function depositMoney() {
+            const selectedContactName = document.getElementById('contactSelect').value;
+            const transferAmount = parseFloat(document.getElementById('depositAmount').value);
+            const nombreUsuario = localStorage.getItem('nombreUsuario');
+
+
+            if (!nombreUsuario) {
+                alert("Usuario no definido.");
+                return;
+            }
+
+            let userData = JSON.parse(localStorage.getItem(nombreUsuario)) || { balance: 0 };
+            let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+            const contactIndex = contacts.findIndex(contact => contact.name === selectedContactName);
+
+
+            saveTransaction(`Transferencia a ${selectedContactName}`, transferAmount);
+
+            if (contactIndex !== -1 && transferAmount > 0) {
+                if (userData.balance >= transferAmount) {
+                    contacts[contactIndex].balance += transferAmount;
+                    userData.balance -= transferAmount; // Update user balance
+
+                    localStorage.setItem(nombreUsuario, JSON.stringify(userData));
+                    localStorage.setItem('contacts', JSON.stringify(contacts));
+
+                    loadUserData(nombreUsuario); // Correctly refresh user data
+                    loadContacts(); // Refresh contact list
+
+                    alert(`Transferencia realizada con éxito.\nNuevo saldo: $${userData.balance}`);
+                } else {
+                    alert("Saldo insuficiente.");
+                }
+            } else {
+                alert("Por favor, selecciona un contacto y una cantidad válida para transferir.");
+            }
+
+//Guardar transiciones en transactions.html 
+        }
+        function saveTransaction(type, amount) {
+            var transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            var transaction = {
+                id: Date.now(),
+                type: type,
+                amount: amount,
+                date: new Date().toLocaleString()
+            };
+            transactions.push(transaction);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+    </script>
+
+</body>
+<!---animacion perrito-->
+<footer class="container-fluid" id="Perrito-sendmoney">
+    <div class="row">
+        <div class="col d-flex justify-content-end">
+            <a href="#">
+                <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs"
+                    type="module"></script>
+
+                <dotlottie-player src="https://lottie.host/8c13c52c-c69e-40d3-ba18-59e655ba73b3/FFzu7QJrjk.json"
+                    background="transparent" speed="1" style="width: 300px; height: 300px;" loop
+                    autoplay></dotlottie-player>
+            </a>
+        </div>
+    </div>
+</footer>
+
+</html>
